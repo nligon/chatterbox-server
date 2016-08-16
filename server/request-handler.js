@@ -35,15 +35,14 @@ urls = {
   '/classes/messages': true,
   'classes/room': true
 };
+  
+  var body = {
+    results: []
+  };
+
 
 var requestHandler = function(request, response) {
 
-  var body = {
-    headers: request.headers,
-    method: request.method,
-    url: request.url,
-    results: []
-  };
   
   var headers = defaultCorsHeaders;
   var end = function () {
@@ -86,7 +85,6 @@ var requestHandler = function(request, response) {
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
         // console.log('4body.results*********************************', body.results);
-        console.log('*****************end of function reached ***')
   response.end();
         // console.log('5body.results*********************************', body.results);
 };
