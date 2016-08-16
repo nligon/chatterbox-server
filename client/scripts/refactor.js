@@ -22,7 +22,7 @@
 
 app = {
 
-  server: 'https://api.parse.com/1/classes/messages/',
+  server: 'http://127.0.0.1:3000/classes/messages',
 
   init: function() {
     // Get username
@@ -76,7 +76,7 @@ app = {
   loadMsgs: function() {
     $.ajax({
       url: app.server,
-      data: { order: '-createdAt' },
+      // data: { order: '-createdAt' },
       contentType: 'application/json',
       success: function(json) {
         app.displayMessages(json.results);
@@ -121,7 +121,7 @@ app = {
 /////////////////////////////////////////////////////////////////////////////
 
 var Message = Backbone.Model.extend({
-  url: 'https://api.parse.com/1/classes/messages/',
+  url: app.server,
   defaults: {
     username: '',
     text: ''
@@ -131,10 +131,10 @@ var Message = Backbone.Model.extend({
 var Messages = Backbone.Collection.extend({
 
   model: Message,
-  url: 'https://api.parse.com/1/classes/messages/',
+  url: app.server,
 
   loadMsgs: function() {
-    this.fetch({data: { order: '-createdAt' }});
+    this.fetch();
   },
 
   parse: function(response, options) {
@@ -214,7 +214,7 @@ var MessagesView = Backbone.View.extend({
   renderMessage: function(message) {
     if (!this.onscreenMessages[message.get('objectId')]) {
       var messageView = new MessageView({model: message});
-      this.$el.prepend(messageView.render());
+      this.$el.append(messageView.render());
       this.onscreenMessages[message.get('objectId')] = true;
     }
   }

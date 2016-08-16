@@ -36,18 +36,16 @@ urls = {
   'classes/room': true
 };
   
-  var body = {
-    results: []
-  };
+var body = {
+  results: []
+};
 
 
 var requestHandler = function(request, response) {
+  console.log('method*****:', request.method);
 
   
   var headers = defaultCorsHeaders;
-  var end = function () {
-    response.end();
-  };
 
   headers['Content-Type'] = 'application/json';
   
@@ -55,39 +53,44 @@ var requestHandler = function(request, response) {
   if (request.method === 'GET' && request.url === '/classes/messages') {
     var statusCode = 200;
     response.writeHead(statusCode, headers);
-    // console.log('0Body*******************************************', body);
-    response.write(JSON.stringify(body));
-          // console.log('1body.results*********************************', body.results);
+
+    if (response.write === undefined) {
+      response.end(JSON.stringify(body));
+    } else {
+      response.write(JSON.stringify(body));
+      response.end();
+    }
 
     // if POST
   } else if (request.method === 'POST' && request.url === '/classes/messages') {
     var statusCode = 201;
     response.writeHead(statusCode, headers);  
     request.on('data', function(chunk) {
+      var converted = JSON.parse(chunk);
+      converted.objectId = Math.random() * 9999;
+      body.results.push(converted);
 
-      body.results.push(JSON.parse(chunk));
-      // console.log('CHUNK **************************', chunk);
-      console.log('3body.results*********************************', body.results);
-      return end();
+      response.end();
     });
     // if unknown request
+  } else if (request.method === 'OPTIONS') {
+    var statusCode = 200;
+    response.writeHead(statusCode, headers);
+    response.end();
   } else {
     var statusCode = 404;
+    console.log('request************************:', request.method);
     response.writeHead(statusCode, headers);
-    response.write(JSON.stringify(body));
+    if (response.write === undefined) {
+      response.end(JSON.stringify(body));
+    } else {
+      response.write(JSON.stringify(body));
+      response.end();
+    }
   }
+   
 
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-        // console.log('4body.results*********************************', body.results);
-  response.end();
-        // console.log('5body.results*********************************', body.results);
 };
 
 
-var exports = module.exports = {handleRequest: requestHandler};
+var exports = module.exports = {requestHandler: requestHandler};
