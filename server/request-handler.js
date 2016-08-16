@@ -29,51 +29,55 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
-
+urls = {
+  '/log': true,
+  '/send': true,
+  '/classes/messages': true,
+  'classes/room': true
+};
 
 var requestHandler = function(request, response) {
-  console.log('********************************************RESPONSE OBJECT LOGGED IN FULL:');
-  
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
-  // See the note below about CORS headers.
+  var body = {
+    headers: request.headers,
+    method: request.method,
+    url: request.url,
+    results: []
+  };
+  
   var headers = defaultCorsHeaders;
+  var end = function () {
+    response.end();
+  };
 
   headers['Content-Type'] = 'application/json';
-  // response.writeHead(200, { "Content-Type": "application/json" });
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-
-
+  
   // If GET
-  if (request.method === 'GET') {
-    console.log(request.method, 'received');
+  if (request.method === 'GET' && request.url === '/classes/messages') {
     var statusCode = 200;
     response.writeHead(statusCode, headers);
-    response.write(JSON.stringify({results: []}));
+    // console.log('0Body*******************************************', body);
+    response.write(JSON.stringify(body));
+          // console.log('1body.results*********************************', body.results);
 
     // if POST
-  } else if (request.method === 'POST') {
-    console.log(request.method, 'received');
+  } else if (request.method === 'POST' && request.url === '/classes/messages') {
     var statusCode = 201;
-    request.setEncoding('utf8');
-    var data = "";
-    request.on("data", function(chunk) {
-      data += chunk;
-    });
-    request.on("end", function() {
-      console.log("DATA: " + data);
-    });
-    response.writeHead(statusCode, headers);
-    response.write(JSON.stringify({results: []}));
+    response.writeHead(statusCode, headers);  
+    request.on('data', function(chunk) {
 
+      body.results.push(JSON.parse(chunk));
+      // console.log('CHUNK **************************', chunk);
+      console.log('3body.results*********************************', body.results);
+      return end();
+    });
     // if unknown request
   } else {
-    console.log(request.method, 'received (unexpected method!)');
     var statusCode = 404;
     response.writeHead(statusCode, headers);
+    response.write(JSON.stringify(body));
   }
-  
+
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -81,7 +85,10 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
+        // console.log('4body.results*********************************', body.results);
+        console.log('*****************end of function reached ***')
   response.end();
+        // console.log('5body.results*********************************', body.results);
 };
 
 
